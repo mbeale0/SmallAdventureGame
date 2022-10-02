@@ -55,8 +55,6 @@ public class BasicBehaviour : MonoBehaviour
 		camScript = playerCamera.GetComponent<ThirdPersonOrbitCamBasic> ();
 		rBody = GetComponent<Rigidbody> ();
 
-		Cursor.visible = false;
-
 		// Grounded verification variables.
 		groundedBool = Animator.StringToHash("Grounded");
 		colExtents = GetComponent<Collider>().bounds.extents;
