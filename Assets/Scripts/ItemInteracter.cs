@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ItemInteracter : MonoBehaviour
 {
@@ -12,6 +13,7 @@ public class ItemInteracter : MonoBehaviour
     [SerializeField] private bool isPlaceable = false;
     [SerializeField] private Transform[] bars = null;
     [SerializeField] private AudioClip[] audioClips = null;
+    [SerializeField] private GameObject cameraObject = null;
     private bool hasPlayedhint = false;
 
     private bool canInteract;
@@ -19,15 +21,9 @@ public class ItemInteracter : MonoBehaviour
     private void Start()
     {
         InteractCanvas.SetActive(false);
-        audioSource = gameObject.GetComponent<AudioSource>();
-        //audioSource.PlayOneShot(audioClips[0], .3f);
     }
     private void Update()
-    {
-        if (!hasPlayedhint && !audioSource.isPlaying){
-            audioSource.PlayOneShot(audioClips[1], .3f);
-            hasPlayedhint = true;
-        }
+    {        
         bool hasItem = false;
         foreach (Transform child in playerHand)
         {
@@ -46,15 +42,15 @@ public class ItemInteracter : MonoBehaviour
                 if (Input.GetKeyDown(KeyCode.E))
                 {
                     if (gameObject.CompareTag("Key")){
-                        audioSource.PlayOneShot(audioClips[2], .3f);
+                        cameraObject.GetComponent<AudioController>().playAfterKey();
                     }
                     else if (gameObject.CompareTag("KeyCard"))
                     {
-                        audioSource.PlayOneShot(audioClips[3], .3f);
+                        cameraObject.GetComponent<AudioController>().playAfterKeyCard();
                     }
                     else if (gameObject.CompareTag("Button"))
                     {
-                        audioSource.PlayOneShot(audioClips[4], .3f);
+                        cameraObject.GetComponent<AudioController>().playAfterButton();
                     }
                     InteractCanvas.SetActive(false);
                     foreach (Transform child in playerHand)
@@ -66,7 +62,7 @@ public class ItemInteracter : MonoBehaviour
                     }
                     
                     InteractCanvas.SetActive(false);
-                    gameObject.GetComponent<MeshRenderer>().enabled = false;
+                    Destroy(gameObject);
                 }
                 
             }
@@ -77,7 +73,7 @@ public class ItemInteracter : MonoBehaviour
                 {
                     if (gameObject.CompareTag("Button"))
                     {
-                        audioSource.PlayOneShot(audioClips[5], .3f);
+                        cameraObject.GetComponent<AudioController>().playAfterWin();
                     }
                     InteractCanvas.SetActive(false);
                     foreach (Transform child in playerHand)
@@ -114,11 +110,17 @@ public class ItemInteracter : MonoBehaviour
                             }
                             
                         }
+                        StartCoroutine(LoadWinScene());
                     }
                 }
                 
             }
         }
+    }
+    IEnumerator LoadWinScene()
+    {
+        yield return new WaitForSeconds(17f);
+        SceneManager.LoadScene("Final");
     }
     private void OnMouseOver()
     {
