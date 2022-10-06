@@ -10,45 +10,118 @@ public class ItemInteracter : MonoBehaviour
     [SerializeField] private Transform playerHand = null;
     [SerializeField] private bool isGrabable = false;
     [SerializeField] private bool isPlaceable = false;
-    // allow option to select if grabbing or placing
-    // serialize field for hand and place objects(transforms probably
+    [SerializeField] private Transform[] bars = null;
+    [SerializeField] private AudioClip[] audioClips = null;
+    private bool hasPlayedhint = false;
 
     private bool canInteract;
-
+    private AudioSource audioSource;
     private void Start()
     {
         InteractCanvas.SetActive(false);
+        audioSource = gameObject.GetComponent<AudioSource>();
+        //audioSource.PlayOneShot(audioClips[0], .3f);
     }
     private void Update()
     {
-        if(canInteract && Input.GetKeyDown(KeyCode.E))
+        if (!hasPlayedhint && !audioSource.isPlaying){
+            audioSource.PlayOneShot(audioClips[1], .3f);
+            hasPlayedhint = true;
+        }
+        bool hasItem = false;
+        foreach (Transform child in playerHand)
+        {
+            if (child.CompareTag(tag))
+            {
+                if (child.gameObject.activeSelf){
+                    hasItem = true;
+                }
+            }
+        }
+        if (canInteract)
         {
             if (isGrabable)
             {
-                foreach (Transform child in playerHand)
+                InteractCanvas.SetActive(true);
+                if (Input.GetKeyDown(KeyCode.E))
                 {
-                    if (child.CompareTag(tag))
+                    if (gameObject.CompareTag("Key")){
+                        audioSource.PlayOneShot(audioClips[2], .3f);
+                    }
+                    else if (gameObject.CompareTag("KeyCard"))
                     {
-                        child.gameObject.SetActive(true);
+                        audioSource.PlayOneShot(audioClips[3], .3f);
+                    }
+                    else if (gameObject.CompareTag("Button"))
+                    {
+                        audioSource.PlayOneShot(audioClips[4], .3f);
+                    }
+                    InteractCanvas.SetActive(false);
+                    foreach (Transform child in playerHand)
+                    {
+                        if (child.CompareTag(tag))
+                        {
+                            child.gameObject.SetActive(true);
+                        }
+                    }
+                    
+                    InteractCanvas.SetActive(false);
+                    gameObject.GetComponent<MeshRenderer>().enabled = false;
+                }
+                
+            }
+            else if ( hasItem && isPlaceable)
+            {
+                InteractCanvas.SetActive(true);
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    if (gameObject.CompareTag("Button"))
+                    {
+                        audioSource.PlayOneShot(audioClips[5], .3f);
+                    }
+                    InteractCanvas.SetActive(false);
+                    foreach (Transform child in playerHand)
+                    {
+                        if (child.CompareTag(tag))
+                        {
+                            child.gameObject.SetActive(false);
+                        }
+
+
+                    }
+                    foreach (Transform child in gameObject.transform)
+                    {
+                        if (child.CompareTag(tag))
+                        {
+                            child.gameObject.SetActive(true);
+                        }
+                    }
+
+                    if (gameObject.CompareTag("Key") || gameObject.CompareTag("KeyCard"))
+                    {
+                        GameObject door = gameObject.transform.parent.gameObject;
+                        Destroy(door);
+                    }
+                    else if (gameObject.CompareTag("Button"))
+                    {
+                        foreach (Transform bar in bars)
+                        {
+                            float x = 0;
+                            while(x < 5)
+                            {
+                                bar.Translate(Vector3.back * Time.deltaTime);
+                                x += Time.deltaTime;
+                            }
+                            
+                        }
                     }
                 }
-                InteractCanvas.SetActive(false);
-                Destroy(gameObject);
+                
             }
-            else if (isPlaceable)
-            {
-                // else placing
-                // diable item in hand
-                // activate item in scene
-                // activate in scene action(door opening/winning)
-            }
-
-
         }
     }
-    private void OnMouseEnter()
+    private void OnMouseOver()
     {
-        InteractCanvas.SetActive(true);
         canInteract = true;
     }
     private void OnMouseExit()
